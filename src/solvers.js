@@ -18,22 +18,6 @@ PieceType['empty'] = 0;
 PieceType['rook'] = 1;
 PieceType['attack'] = 2;
 PieceType['queen'] = 3;
-//rotate 90 degrees counter-clockwise
-var rotateBoard = function(board){
-  var n = board.length;
-  var b = $.extend(true, [], board);
-  var tmp;
-  for (var i=0; i<n/2; i++){
-    for (var j=i; j<n-i-1; j++){
-      tmp=b[i][j];
-      b[i][j]=b[j][n-i-1];
-      b[j][n-i-1]=b[n-i-1][n-j-1];
-      b[n-i-1][n-j-1]=b[n-j-1][i];
-      b[n-j-1][i]=tmp;
-    }
-  }
-  return b;
-}
 
 var removeDuplicates = function (collection){
   var strCollection = _.map(collection, function(item){
@@ -45,51 +29,47 @@ var removeDuplicates = function (collection){
   });
 }
 
-var removeDuplicateRotations = function(boards){
-  var rotatedBoards = [];
-  for(var i = 0; i < boards.length; i++){
-    var b1 = boards[i];
-    var b2 = rotateBoard(b1);
-    var b3 = rotateBoard(b2);
-    var b4 = rotateBoard(b3);
-    b1 = JSON.stringify(b1);
-    b2 = JSON.stringify(b2);
-    b3 = JSON.stringify(b3);
-    b4 = JSON.stringify(b4);
-    var found = false;
-    for(var j = i+1;  j < boards.length; j++){
-      var a1 = JSON.stringify(boards[j]);
-      if(a1 === b1 || a1 === b2 || a1 === b3 || a1 === b4){
-        found = true;
-        break;
-      }
+window.findNRooksSolutions = function(n, board){
+  board = board || makeEmptyBoard(n);
+  var possibleBoards = placePiece(board, PieceType.rook);
+  n--;
+  if (n === 0){
+    return possibleBoards;
+  } else if (n > 0){
+    var arr = [];
+    for (var i = 0; i < possibleBoards.length; i++){
+      arr = arr.concat(findNRooksSolutions(n, possibleBoards[i]) );
     }
-    if(!found){
-      rotatedBoards.push(boards[i]);
-    };
+    return removeDuplicates(arr);
   }
-  return removeDuplicates(rotatedBoards);
 }
 
 window.findNRooksSolution = function(n, board) {
   board = board || makeEmptyBoard(n);
-  var possibleBoards = placeRook(board, n==1);
+  var possibleBoards = placePiece(board, PieceType.rook);
   n--;
-
   if (n === 0){
-    // console.log('Single solution for ' + n + ' rooks:', JSON.stringify(possibleBoards));
     return possibleBoards;
   } else if (n > 0){
     var arr = [];
     for (var i = 0; i < possibleBoards.length; i++){
       arr = arr.concat( findNRooksSolution(n, possibleBoards[i]) );
+      break;
     }
     return removeDuplicates(arr);
   }
 };
+
+// return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
+window.countNRooksSolutions = function(n) {
+  var solutionCount = findNRooksSolutions(n).length; //fixme
+  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
+  return solutionCount;
+};
+
 window.debugFindNRooksSolution = function(n, board){
   var before = (new Date()).getTime();
-  var results = findNRooksSolution(n,board);
+  var results = findNRooksSolutions(n,board);
   var after = (new Date()).getTime();
   console.log("Time Taken", after-before);
   return JSON.stringify(results);
@@ -97,55 +77,63 @@ window.debugFindNRooksSolution = function(n, board){
 }
 
 
-window.placeRook = function(board, firstTime){
-  firstTime = false;
-  var possibleBoards = [];
-  var boardLength = board.length;
-  if(firstTime){
-    boardLength = Math.ceil(board.length/2);
-  }
-  for (var x = 0; x < boardLength; x++){
-    for (var y = 0; y < boardLength; y++){
-      if (board[x][y] === PieceType.empty){
-        var b = $.extend(true, [], board);
-        b[x][y] = PieceType.rook;
-        updateBoard(x, y, b);
-        possibleBoards.push(b);
-      }
-    }
-  }
-
-  return possibleBoards;
-}
-
-
-// return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
-window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
-
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
-  return solutionCount;
-};
-
-
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
-window.findNQueensSolution = function(n) {
-  var solution = undefined; //fixme
-
-  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
-  return solution;
+window.findNQueensSolution = function(n, board) {
+  // board = board || makeEmptyBoard(n);
+  // var possibleBoards = placePiece(board, PieceType.queen);
+  // n--;
+  // if (n === 0){
+  //   return possibleBoards;
+  // } else if (n > 0){
+  //   var arr = [];
+  //   for (var i = 0; i < possibleBoards.length; i++){
+  //     arr = arr.concat(findNQueensSolution(n, possibleBoards[i]) );
+  //     break;
+  //   }
+  //   return removeDuplicates(arr);
+  // }
 };
-
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  var solutionCount = findNQueensSolutions(n).length; //fixme
 
   console.log('Number of solutions for ' + n + ' queens:', solutionCount);
   return solutionCount;
 };
-
+window.findNQueensSolutions = function(n, board){
+  board = board || makeEmptyBoard(n);
+  var possibleBoards = placePiece(board, PieceType.queen);
+  n--;
+  if (n === 0){
+    return possibleBoards;
+  } else if (n > 0){
+    var arr = [];
+    for (var i = 0; i < possibleBoards.length; i++){
+      arr = arr.concat(findNQueensSolutions(n, possibleBoards[i]) );
+    }
+    return removeDuplicates(arr);
+  }
+}
+window.placePiece = function(board, pieceType){
+  var possibleBoards = [];
+  for (var x = 0; x < board.length; x++){
+    for (var y = 0; y < board.length; y++){
+      if (board[x][y] === PieceType.empty){
+        var b = $.extend(true, [], board);
+        b[x][y] = pieceType;
+        if(pieceType === PieceType.rook){
+          updateBoard(x, y, b);
+        }else{
+          updateQueenBoard(x, y, b);
+        }
+        possibleBoards.push(b);
+      }
+    }
+  }
+  return possibleBoards;
+}
 window.updateBoard = function(row, col, board){
   for (var y = 0; y < board[row].length; y++){
     if (col !== y){
@@ -157,6 +145,44 @@ window.updateBoard = function(row, col, board){
       board[x][col] = PieceType.attack;
     }
   }
+}
+
+window.updateQueenBoard = function(row, col, board){
+  // row
+  for (var y = 0; y < board[row].length; y++){
+    if (col !== y){
+      board[row][y] = PieceType.attack;
+    }
+  }
+  // column
+  for (var x = 0; x < board[col].length; x++){
+    if (row !== x){
+      board[x][col] = PieceType.attack;
+    }
+  }
+  // diagonals
+  var i = 1;
+  while (col+i < board.length && row+i < board.length){
+    board[row+i][col+i] = PieceType.attack;
+    i++;
+  }
+  i = 1;
+  while (col-i >= 0 && row-i >= 0){
+    board[row-i][col-i] = PieceType.attack;
+    i++;
+  }
+  i = 1;
+  while (row-i >= 0 && col+i < board.length){
+    board[row-i][col+i] = PieceType.attack;
+    i++;
+  }
+  i = 1;
+  while (row+i < board.length && col-i >= 0){
+    board[row+i][col-i] = PieceType.attack;
+    i++;
+  }
+  // console.log(board);
+  return board;
 }
 
 var makeEmptyBoard = function(n) {
