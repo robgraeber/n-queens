@@ -80,19 +80,7 @@ window.debugFindNRooksSolution = function(n, board){
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
 window.findNQueensSolution = function(n, board) {
-  // board = board || makeEmptyBoard(n);
-  // var possibleBoards = placePiece(board, PieceType.queen);
-  // n--;
-  // if (n === 0){
-  //   return possibleBoards;
-  // } else if (n > 0){
-  //   var arr = [];
-  //   for (var i = 0; i < possibleBoards.length; i++){
-  //     arr = arr.concat(findNQueensSolution(n, possibleBoards[i]) );
-  //     break;
-  //   }
-  //   return removeDuplicates(arr);
-  // }
+  return findNQueensSolutions(n)[0];
 };
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
