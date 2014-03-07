@@ -25,11 +25,23 @@ window.findNRooksSolution = function(n, board) {
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
-window.countNRooksSolutions = function(n) {
-  var solutionCount = findNRooksSolutions(n).length;
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
-  return solutionCount;
-};
+
+window.countNRooksSolutions = function(n, bitColumn, boardLength, count){
+  var bitColumn = bitColumn || Math.pow(2,n)-1; 
+  var count = count || 0;
+  var boardLength = boardLength || n;
+  for(var i = 0; i < boardLength; i++){
+    if(bitColumn & 1<<i){
+      var clone = bitColumn & ~(1 << i);
+      if(n <= 1){
+        count++;
+      } else {
+        count = countNRooksSolutions(n-1, clone, boardLength, count);
+      }
+    } 
+  }
+  return count;
+}
 
 window.findNRooksSolutions = function(n, board, boardLength){
   board = board || makeEmptyBoard(n);
@@ -59,11 +71,27 @@ window.findNQueensSolution = function(n, board) {
 };
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
-window.countNQueensSolutions = function(n) {
-  var solutionCount = findNQueensSolutions(n).length
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
-};
+window.countNQueensSolutions = function(n, bitColumn, bitMajorD, bitMinorD, boardLength, count){
+  var bitColumn = bitColumn || Math.pow(2,n)-1; 
+  var bitMajorD = bitMajorD || Math.pow(2,n)-1; 
+  var bitMinorD = bitMinorD || Math.pow(2,n)-1; 
+  var count = count || 0;
+  var boardLength = boardLength || n;
+  for(var i = 0; i < boardLength; i++){
+    var union = bitColumn & bitMajorD & bitMinorD;
+    if(union & 1<<i ){
+      var a = bitColumn & ~(1 << i);
+      var b = (((bitMajorD & ~(1 << i))<<1) + 1) % Math.pow(2,boardLength);
+      var c = ((bitMinorD & ~(1 << i))>>1) + Math.pow(2,boardLength-1);
+      if(n <= 1){
+        count++;
+      } else {
+        count = countNQueensSolutions(n-1, a,b,c, boardLength, count);
+      }
+    } 
+  }
+  return count;
+}
 
 window.findNQueensSolutions = function(n, board, boardLength){
   board = board || makeEmptyBoard(n);
